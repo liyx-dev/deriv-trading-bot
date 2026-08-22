@@ -4,6 +4,7 @@ import { sendTelegramMessage, buildSignalMessage, buildReportMessage } from './t
 
 // Symbol Mapping for Deriv API symbols
 const SYMBOLS = {
+  "R_100": "Volatility 100 Index", // Trades 24/7 on Deriv
   "frxEURUSD": "EUR/USD",
   "frxGBPUSD": "GBP/USD",
   "frxUSDJPY": "USD/JPY",
@@ -129,16 +130,26 @@ function evaluateMarketData(candles) {
   let direction = "NEUTRAL";
   let confidence = 0.5;
 
+  // 1. Fresh Crossover (Highest Confidence)
   if (prevShort <= prevLong && shortVal > longVal) {
     direction = "Rise";
-    confidence = 0.75;
+    confidence = 0.80;
   } else if (prevShort >= prevLong && shortVal < longVal) {
     direction = "Fall";
-    confidence = 0.75;
+    confidence = 0.80;
+  } 
+  // 2. Strong Established Trend Continuation
+  else if (shortVal > longVal && closes[idx] > shortVal) {
+    direction = "Rise";
+    confidence = 0.65;
+  } else if (shortVal < longVal && closes[idx] < shortVal) {
+    direction = "Fall";
+    confidence = 0.65;
   }
 
   return { direction, confidence };
 }
+
 
 function calcEMA(values, period) {
   const k = 2 / (period + 1);
