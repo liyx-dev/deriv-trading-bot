@@ -53,20 +53,24 @@ async function runBotEngine(env) {
 
   // 4. Evaluate Pairs for Technical Signals
   let selectedSignal = null;
-
-  for (const [symbolCode, displayName] of Object.entries(SYMBOLS)) {
+    for (const [symbolCode, displayName] of Object.entries(SYMBOLS)) {
     try {
+      console.log(`[DEBUG] Fetching candles for ${symbolCode}...`);
       const candles = await deriv.getCandles(symbolCode, 30);
+      console.log(`[DEBUG] Received ${candles.length} candles for ${symbolCode}`);
+
       const signal = evaluateMarketData(candles);
+      console.log(`[DEBUG] ${symbolCode} Signal:`, JSON.stringify(signal));
 
       if (signal.direction !== "NEUTRAL" && signal.confidence >= 0.50) {
         selectedSignal = { symbol: symbolCode, displayName, ...signal };
-        break; // Process only the highest-quality single trade per cycle
+        break; 
       }
     } catch (e) {
-      console.error(`Error processing ${symbolCode}:`, e.message);
+      console.error(`[ERROR] Processing ${symbolCode}:`, e.message || e);
     }
   }
+
 
   if (!selectedSignal) {
     return { status: "COMPLETED", result: "No high-confidence signals found." };
