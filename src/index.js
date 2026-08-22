@@ -58,7 +58,7 @@ async function runBotEngine(env) {
       const candles = await deriv.getCandles(symbolCode, 30);
       const signal = evaluateMarketData(candles);
 
-      if (signal.direction !== "NEUTRAL" && signal.confidence >= 0.70) {
+      if (signal.direction !== "NEUTRAL" && signal.confidence >= 0.50) {
         selectedSignal = { symbol: symbolCode, displayName, ...signal };
         break; // Process only the highest-quality single trade per cycle
       }
