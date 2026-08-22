@@ -1,7 +1,8 @@
 export class DerivClient {
-  constructor(token, appId = "1089") {
+  constructor(token, appId = "34bGRqe9R3W91v5Fh52xw") {
     this.token = token;
     this.appId = appId;
+    // Connects via Deriv's v3 WebSocket using your App ID
     this.wsUrl = `wss://ws.derivws.com/websockets/v3?app_id=${this.appId}`;
   }
 
@@ -32,14 +33,14 @@ export class DerivClient {
           }
 
           if (data.msg_type === 'authorize') {
+            // Once authorized, submit the trade payload
             ws.send(JSON.stringify(payload));
           } else if (
             data.msg_type === expectedType || 
             data.msg_type === 'history' || 
             data.msg_type === 'candles' || 
             data.msg_type === 'buy' || 
-            data.msg_type === 'proposal_open_contract' ||
-            data.msg_type === 'balance'
+            data.msg_type === 'proposal_open_contract'
           ) {
             clearTimeout(timeout);
             ws.close();
@@ -61,18 +62,16 @@ export class DerivClient {
 
   async getCandles(symbol, count = 30) {
     try {
-      // Stripped req_type from payload to fix Deriv API validation
       const res = await this.sendRequest({
         ticks_history: symbol,
         adjust_start_time: 1,
         count: count,
         end: "latest",
-        granularity: 900, // 15-minute candles
+        granularity: 900,
         style: "candles"
       }, "candles", false);
 
       if (!res || !res.candles || !Array.isArray(res.candles)) {
-        console.warn(`[WARN] No candles returned for ${symbol}. Market may be closed.`);
         return [];
       }
 
@@ -91,7 +90,7 @@ export class DerivClient {
 
   async executeTrade(symbol, direction, amount = 1.00, durationMinutes = 15) {
     if (!this.token) {
-      throw new Error("DERIV_TOKEN is missing or undefined in environment variables.");
+      throw new Error("DERIV_TOKEN is missing or undefined in Cloudflare secret environment.");
     }
 
     const contractType = direction === "Rise" ? "CALL" : "PUT";
@@ -114,19 +113,6 @@ export class DerivClient {
     }
 
     return res.buy;
-  }
-
-  async checkContractStatus(contractId) {
-    const res = await this.sendRequest({
-      proposal_open_contract: 1,
-      contract_id: contractId
-    }, "proposal_open_contract", true);
-
-    if (!res.proposal_open_contract) {
-      throw new Error(`Unable to fetch status for contract ID: ${contractId}`);
-    }
-
-    return res.proposal_open_contract;
   }
 }
 
