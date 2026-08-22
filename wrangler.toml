@@ -1,0 +1,15 @@
+name = "deriv-trading-bot"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = ["58 */15 * * *"] # Fires at :13, :28, :43, :58 UTC (2 mins before 15m cycle)
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cryptopairs"
+database_id = "05e6ca12-b672-47e2-8950-d51dd1ade9d3"
+
+[ai]
+binding = "AI"
+
