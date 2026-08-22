@@ -3,14 +3,24 @@ import { DerivClient } from './deriv.js';
 import { sendTelegramMessage, buildSignalMessage, buildReportMessage } from './telegram.js';
 
 // Symbol Mapping for Deriv API symbols
+
+// Optimized to 5 24/7 Synthetic Pairs to stay under Cloudflare CPU (10ms) & subrequest limits
 const SYMBOLS = {
-  "R_100": "Volatility 100 Index", // Trades 24/7 on Deriv (Great for weekend testing)
+  "R_100": "Volatility 100 Index",
+  "1HZ100V": "Volatility 100 (1s) Index",
+  "R_75": "Volatility 75 Index",
+  "1HZ50V": "Volatility 50 (1s) Index",
+  "R_25": "Volatility 25 Index"
+
+  /* --- Forex Pairs (Disabled for weekend / subrequest efficiency) ---
   "frxEURUSD": "EUR/USD",
   "frxGBPUSD": "GBP/USD",
   "frxUSDJPY": "USD/JPY",
   "frxAUDUSD": "AUD/USD",
   "frxUSDCAD": "USD/CAD"
+  ------------------------------------------------------------------ */
 };
+
 
 export default {
   async fetch(request, env, ctx) {
